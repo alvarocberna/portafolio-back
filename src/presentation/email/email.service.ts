@@ -1,64 +1,29 @@
-import nodemailer from 'nodemailer';
-import { envs } from '../../config/envs';
+require('dotenv').config();
+import { Resend } from 'resend';
 import { Request, Response } from 'express';
 
-export interface EmailOptions {
-    to: string;
-    subject: string;
-    htmlBody: string;
-}
+const resend = new Resend(process.env.RESEND_API_KEY);
+const email_from = process.env.FROM_EMAIL ?? 'cberna.alvaro@gmail.com';
+const email_to = process.env.TO_EMAIL ?? 'onboarding@resend.dev';
 
 export class EmailService {
 
-    // private transporter = nodemailer.createTransport({
-    // service: envs.MAILER_SERVICE,
-    // auth: {
-    //     user: envs.MAILER_EMAIL,
-    //     pass: envs.MAILER_SECRET_KEY
-    // }
-    // })
-
-    private transporter;
-
-    constructor() {
-        this.transporter = nodemailer.createTransport({
-            host: 'smtp.gmail.com',
-            port: 465,
-            secure: true,
-            service: envs.MAILER_SERVICE,
-            auth: {
-                user: envs.MAILER_EMAIL,
-                pass: envs.MAILER_SECRET_KEY,
-            },
-            debug: true,
-        });
-
-        // Asegúrate de enlazar el contexto correctamente si pasas el método como callback
-        this.sendEmail = this.sendEmail.bind(this);
-    }
-
-    async sendEmail(req: Request, res: Response) {
-
-        const { to, subject, htmlBody } = req.body;
-
-
-        try {
-            const info = await this.transporter.sendMail({
-                from: envs.MAILER_EMAIL,
-                to: to,
-                subject: subject,
-                html: htmlBody
-            })
-            res.json('email enviado: ' + info);
+    async sendEmail(req: Request, res: Response){
+        const { subject, html } = req.body;
+        try{
+            console.log('enviando email...')
+            await resend.emails.send({
+              from: email_from,
+              to: email_to,
+              subject: subject,
+              html: html,
+            });
+            res.json('email enviado');
             return;
-
-        } catch (err) {
-            console.log(err);
-            res.json('erro al enviar email' + err);
+        }catch(error){
+            console.log('error al enviar email')
+            res.json('error al enviar email: ' + error);
             return;
         }
-
     }
-
-
 }

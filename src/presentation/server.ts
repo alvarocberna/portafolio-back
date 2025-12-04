@@ -1,6 +1,7 @@
 import express, { Router } from 'express';
 import cors from 'cors';
-import { EmailService } from './email/email.service';
+import helmet from 'helmet';
+// import { EmailService } from './email/email.service';
 
 interface Options {
     port: number | string;
@@ -24,7 +25,6 @@ export class Server {
 
     async start() {
 
-
         this.app.use(cors());
 
         this.app.use(express.json());
@@ -34,11 +34,6 @@ export class Server {
         this.app.use(express.static(this.publicPath));
 
         this.app.use(this.routes);
-
-        // this.app.get('*', (req, res) => {
-        //     const indexPath = path.join(__dirname + `../../../${this.publicPath}/index.html`);
-        //     res.sendFile(indexPath);
-        // });
 
         this.app.listen(this.port, () => {
             console.log(`Server running on port ${this.port}`);
