@@ -1,6 +1,5 @@
 import { Router } from "express";
 import { EmailRoutes } from "./email/routes";
-import {verifyToken} from './middleware/auth.middleware';;
 
 export class AppRoutes {
 

@@ -1,7 +1,5 @@
-import express, { Router } from 'express';
+import express, { Router, ErrorRequestHandler, Request, Response, NextFunction} from 'express';
 import cors from 'cors';
-import helmet from 'helmet';
-// import { EmailService } from './email/email.service';
 
 interface Options {
     port: number | string;
@@ -34,6 +32,15 @@ export class Server {
         this.app.use(express.static(this.publicPath));
 
         this.app.use(this.routes);
+
+        //esto maneja errores enviados con next() o throw, pero no con res.status().json()
+        this.app.use((err: any, req: Request, res: Response, next: NextFunction) => {
+            console.error("Error global:", err);
+            res.status(err.status || 500).json({
+                status: 'error',
+                message: err.message || 'Error interno del servidor'
+            });
+        });
 
         this.app.listen(this.port, () => {
             console.log(`Server running on port ${this.port}`);
