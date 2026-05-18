@@ -5,7 +5,9 @@
       "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\cbern\\\\OneDrive\\\\Desktop\\\\PROYECTOS\\\\PRODUCTOS\\\\server-correo\" -Recurse -Force)",
       "Bash(Select-Object FullName)",
       "Bash(ConvertTo-Csv -NoTypeInformation)",
-      "Bash(Out-String)"
+      "Bash(Out-String)",
+      "Bash(npm install *)",
+      "Bash(npm run *)"
     ]
   }
 }

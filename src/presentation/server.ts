@@ -21,7 +21,7 @@ export class Server {
         this.routes = routes;
     }
 
-    async start() {
+    configure() {
 
         this.app.use(cors());
 
@@ -42,10 +42,15 @@ export class Server {
             });
         });
 
-        this.app.listen(this.port, () => {
+        return this.app;
+
+    }
+
+    async start() {
+        const app = this.configure();
+        app.listen(this.port, () => {
             console.log(`Server running on port ${this.port}`);
         });
-
     }
 
 }

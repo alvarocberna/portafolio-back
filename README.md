@@ -134,6 +134,75 @@ Every request to `/api/email/send-email` passes through:
 5. **`validate(emailSchema)`** — validates body with Zod
 6. **`sendEmail`** — sends the email and returns the response
 
+## Deploy
+
+### AWS Lambda
+
+The project supports two entry points that share the same Express app:
+
+| Entry point | Used for |
+|---|---|
+| `src/app.ts` | Local development (`npm run dev` / `npm start`) |
+| `src/lambda.ts` | AWS Lambda deployment |
+
+#### Steps
+
+1. **Build**
+
+   ```bash
+   npm run build
+   ```
+
+   This compiles both entry points to `dist/`. The Lambda handler is exported from `dist/lambda.js`.
+
+2. **Package**
+
+   ```bash
+   zip -r function.zip dist/ node_modules/
+   ```
+
+3. **Create or update the Lambda function**
+
+   ```bash
+   # Create (first time)
+   aws lambda create-function \
+     --function-name server-correo \
+     --runtime nodejs22.x \
+     --handler lambda.handler \
+     --zip-file fileb://function.zip \
+     --role arn:aws:iam::<account-id>:role/<execution-role>
+
+   # Update (subsequent deploys)
+   aws lambda update-function-code \
+     --function-name server-correo \
+     --zip-file fileb://function.zip
+   ```
+
+4. **Set environment variables in Lambda**
+
+   ```bash
+   aws lambda update-function-configuration \
+     --function-name server-correo \
+     --environment "Variables={RESEND_API_KEY=...,FROM_EMAIL=...,INTERNAL_API_TOKEN=...,PROD=true}"
+   ```
+
+5. **Expose via Lambda Function URL** (simplest option, no API Gateway needed)
+
+   ```bash
+   aws lambda create-function-url-config \
+     --function-name server-correo \
+     --auth-type NONE
+   ```
+
+   The returned URL is the base URL. The endpoint will be available at:
+   `POST <function-url>/api/email/send-email`
+
+#### Rate limiting note
+
+`express-rate-limit` stores state in memory. In Lambda, each instance maintains its own counter independently, so the 5 req/min limit is not enforced across concurrent instances. For production use, replace the in-memory store with a shared backend (e.g., DynamoDB), or use **AWS API Gateway throttling** as an alternative.
+
+---
+
 ## Architecture
 
 The project follows a layered architecture:
